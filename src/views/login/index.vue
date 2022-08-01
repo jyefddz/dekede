@@ -1,21 +1,26 @@
 <template>
   <div class="login-container">
     <div class="login">
-      <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
+      <el-form
+        ref="loginForm"
+        :model="loginForm"
+        :rules="loginRules"
+        class="login-form"
+        auto-complete="on"
+        label-position="left"
+      >
         <div class="title-container">
-          <img src="~@/assets/login_img/logo.png" alt="" class="logo">
+          <img src="~@/assets/login_img/logo.png" alt="" class="logo" />
         </div>
 
-        <el-form-item prop="username">
+        <el-form-item prop="loginName">
           <span class="svg-container">
             <i class="el-icon-mobile-phone" />
           </span>
           <el-input
-            ref="username"
-            v-model="loginForm.username"
+            ref="loginName"
+            v-model="loginForm.loginName"
             placeholder="请输入账号"
-            name="username"
             type="text"
           />
         </el-form-item>
@@ -30,65 +35,64 @@
             v-model="loginForm.password"
             :type="passwordType"
             placeholder="请输入密码"
-            name="password"
-            @keyup.enter.native="handleLogin"
           />
           <span class="show-pwd" @click="showPwd">
-            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+            <svg-icon
+              :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
+            />
           </span>
         </el-form-item>
 
-        <el-form-item prop="authcode" class="authcode">
+        <el-form-item prop="code" class="authcode">
           <span class="svg-container">
             <i class="el-icon-message" />
           </span>
           <el-input
-            ref="authcode"
-            v-model="loginForm.authcode"
+            ref="code"
+            v-model="loginForm.code"
             placeholder="请输入验证码"
-            name="authcode"
             type="text"
           />
           <div class="authimg">
-            <img src="@/assets/login_img/yzm.jpeg" alt="">
+            <img @click="getImageCode" :src="$store.state.user.url" alt="" />
           </div>
         </el-form-item>
 
-        <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
+        <el-button
+          :loading="loading"
+          type="primary"
+          style="width: 100%; margin-bottom: 30px"
+          @click.prevent="handleLogin"
+          >登录</el-button
+        >
       </el-form>
     </div>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
     return {
       loginForm: {
-        username: '',
-        password: '',
-        authcode: ''
+        loginName: 'admin',
+        password: 'admin',
+        code: '',
+        loginType: 0,
+        clientToken: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        username: [
+          { required: true, message: '请输入账号', trigger: 'blur' },
+          {
+            pattern: /(^[a-zA-Z][a-zA-Z\s]{0,20}[a-zA-Z]$)/,
+            message: '账号格式不正确',
+            trigger: 'blur'
+          }
+        ],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
       },
       loading: false,
       passwordType: 'password',
@@ -97,7 +101,7 @@ export default {
   },
   watch: {
     $route: {
-      handler: function(route) {
+      handler: function (route) {
         this.redirect = route.query && route.query.redirect
       },
       immediate: true
@@ -114,22 +118,34 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
+    async handleLogin() {
+      try {
+        this.loading = true
+        await this.$refs.loginForm.validate()
+        await this.$store.dispatch('user/getToken', this.loginForm)
+        if (this.$store.state.user.token) {
+          this.$router.push({ path: this.redirect || '/' })
+          this.$message({
+            message: '登录成功',
+            type: 'success'
           })
+          this.loading = false
         } else {
-          console.log('error submit!!')
-          return false
+          this.$message.error('登录失败')
+          this.loading = false
         }
-      })
+      } catch (err) {
+        this.$message.error('请输入账号密码和验证码')
+        this.loading = false
+      }
+    },
+    getImageCode() {
+      this.loginForm.clientToken = Math.floor(Math.random() * (1000000 - 1)) + 1
+      this.$store.dispatch('user/getImageCode', this.loginForm.clientToken)
     }
+  },
+  created() {
+    this.getImageCode()
   }
 }
 </script>
@@ -137,8 +153,8 @@ export default {
 <style lang="scss">
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-$bg:#283443;
-$light_gray:#fff;
+$bg: #283443;
+$light_gray: #fff;
 $cursor: #fff;
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
   .login-container .el-input input {
@@ -147,7 +163,7 @@ $cursor: #fff;
 }
 /* reset element-ui css */
 .login-container {
-      background: url('~@/assets/login_img/background.png') no-repeat 0 0 / cover;
+  background: url('~@/assets/login_img/background.png') no-repeat 0 0 / cover;
   .el-form-item__content {
     display: flex;
   }
@@ -180,9 +196,9 @@ $cursor: #fff;
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 .login-container {
   display: flex;
   justify-content: center;
@@ -210,7 +226,7 @@ $light_gray:#eee;
   .el-button {
     width: 448px;
     height: 52px;
-    background: linear-gradient(262deg,#2e50e1,#6878f0);
+    background: linear-gradient(262deg, #2e50e1, #6878f0);
   }
   .login-form {
     width: 520px;
@@ -240,7 +256,7 @@ $light_gray:#eee;
     position: absolute;
     top: -50px;
     left: 50%;
-    transform: translate(-50%,0);
+    transform: translate(-50%, 0);
     width: 96px;
     height: 96px;
     .logo {
