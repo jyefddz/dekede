@@ -1,30 +1,43 @@
-import { login, getImageCode } from '@/api/user'
+import { login, getImageCode, getUserInfoApi } from '@/api/user'
 export default {
   namespaced: true,
   state: {
     token: '',
-    url: ''
+    url: '',
+    userId: '',
+    userInfo: {},
+    imgCode:''
   },
   mutations: {
     setToken(state, payLoad) {
-      state.token = payLoad
+      state.token = payLoad.token
+      state.userId = payLoad.userId
     },
     setImageCode(state, payLoad) {
-      state.url = `http://likede2-java.itheima.net${payLoad}`
-      // console.log(state.url)
+      state.url = payLoad
+    },
+    setUserInfo(state, payLoad) {
+      state.userInfo = payLoad
+    },
+    setImgCode(state,payLoad){
+      state.imgCode= payLoad
     }
   },
   actions: {
     async getToken(context, payLoad) {
       // 发送请求
       const res = await login(payLoad)
-      console.log(res)
-      context.commit('setToken', res.data.token)
+      // console.log(res)
+      context.commit('setToken', res)
     },
     async getImageCode(context, payLoad) {
       const res = await getImageCode(payLoad)
-      context.commit('setImageCode', res.config.url)
-      // console.log(res)
+      context.commit('setImageCode', res)
+    },
+    async getUserInfo({commit,state}) {
+      const userInfo = await getUserInfoApi(state.userId)
+      console.log(userInfo);
+      commit('setUserInfo', { ...userInfo })
     }
   }
 }

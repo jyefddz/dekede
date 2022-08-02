@@ -16,3 +16,10 @@ export function getImageCode(clientToken) {
     method: 'GET'
   })
 }
+
+// 获取用户信息
+export function getUserInfoApi(id){
+  return request({
+    url:'/user-service/user/'+id
+  })
+}

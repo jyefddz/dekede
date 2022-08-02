@@ -8,6 +8,7 @@
         class="login-form"
         auto-complete="on"
         label-position="left"
+        @keyup.enter.native="handleLogin"
       >
         <div class="title-container">
           <img src="~@/assets/login_img/logo.png" alt="" class="logo" />
@@ -123,24 +124,14 @@ export default {
         this.loading = true
         await this.$refs.loginForm.validate()
         await this.$store.dispatch('user/getToken', this.loginForm)
-        if (this.$store.state.user.token) {
-          this.$router.push({ path: this.redirect || '/' })
-          this.$message({
-            message: '登录成功',
-            type: 'success'
-          })
-          this.loading = false
-        } else {
-          this.$message.error('登录失败')
-          this.loading = false
-        }
-      } catch (err) {
-        this.$message.error('请输入账号密码和验证码')
+        this.$router.push({ path: this.redirect || '/' })
+      } finally {
         this.loading = false
       }
     },
     getImageCode() {
       this.loginForm.clientToken = Math.floor(Math.random() * (1000000 - 1)) + 1
+      this.$store.commit('user/setImgCode', this.loginForm.clientToken)
       this.$store.dispatch('user/getImageCode', this.loginForm.clientToken)
     }
   },
