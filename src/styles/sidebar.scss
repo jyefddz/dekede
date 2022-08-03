@@ -4,12 +4,12 @@
     transition: margin-left 0.28s;
     margin-left: $sideBarWidth;
     position: relative;
+    background-color: #f8fafd;
   }
 
   .sidebar-container {
     transition: width 0.28s;
     width: $sideBarWidth !important;
-    background-color: #fff;
     height: 100%;
     position: fixed;
     font-size: 0px;
@@ -85,9 +85,9 @@
       min-width: $sideBarWidth !important;
       background-color: #fff !important;
 
-      &:hover {
-        // background-color: $subMenuHover !important;
-      }
+      // &:hover {
+      //   // background-color: $subMenuHover !important;
+      // }
     }
   }
 
