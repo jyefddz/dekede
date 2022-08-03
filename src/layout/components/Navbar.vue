@@ -11,8 +11,14 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar + '?imageView2/1/w/80/h/80'" class="user-avatar" />
-          <div class="menu-text">欢迎您,{{$store.state.user.userInfo.userName}}</div>
+          <img
+            :src="$store.state.user.userInfo.image+'123'"
+            class="user-avatar"
+            v-imgError="defaultImg"
+          />
+          <div class="menu-text">
+            欢迎您,{{ $store.state.user.userInfo.userName }}
+          </div>
           <span>退出</span>
           <i class="el-icon-caret-bottom" />
         </div>
@@ -45,7 +51,13 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import defaultImg from '@/assets/common/head.jpg'
 export default {
+  data() {
+    return {
+      defaultImg
+    }
+  },
   components: {
     Breadcrumb,
     Hamburger

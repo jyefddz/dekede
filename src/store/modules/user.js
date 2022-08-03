@@ -1,4 +1,5 @@
 import { login, getImageCode, getUserInfoApi } from '@/api/user'
+import { setTokenTime } from '@/utils/auth'
 export default {
   namespaced: true,
   state: {
@@ -6,7 +7,7 @@ export default {
     url: '',
     userId: '',
     userInfo: {},
-    imgCode:''
+    imgCode: ''
   },
   mutations: {
     setToken(state, payLoad) {
@@ -19,25 +20,35 @@ export default {
     setUserInfo(state, payLoad) {
       state.userInfo = payLoad
     },
-    setImgCode(state,payLoad){
-      state.imgCode= payLoad
+    setImgCode(state, payLoad) {
+      state.imgCode = payLoad
     }
   },
   actions: {
+    // 登录获取token
     async getToken(context, payLoad) {
       // 发送请求
       const res = await login(payLoad)
       // console.log(res)
       context.commit('setToken', res)
+      setTokenTime()
     },
+    // 获取验证码
     async getImageCode(context, payLoad) {
       const res = await getImageCode(payLoad)
       context.commit('setImageCode', res)
     },
-    async getUserInfo({commit,state}) {
+    // 获取用户信息
+    async getUserInfo({ commit, state }) {
       const userInfo = await getUserInfoApi(state.userId)
-      console.log(userInfo);
+      // console.log(userInfo)
       commit('setUserInfo', { ...userInfo })
+    },
+    // 退出
+    logout({ commit, state }) {
+      commit('setToken', '')
+      commit('setUserInfo', {})
+      state.userId = ''
     }
   }
 }
